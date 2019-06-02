@@ -6,7 +6,7 @@ library(forecast)
 
 # ------------------------- load the data-------------------------------
 # Set path
-homePath = "/Users/yvesrychener/Studium/TimeSeries/SwissEnergyGrid/"
+homePath = "/Users/myfiles/Documents/EPFL/M_II/TSE/SwissEnergyGrid/"
 dataPath = paste(homePath, "data/", sep="")
 outPath = paste(homePath, "res/Robjects/", sep="")
 
@@ -43,7 +43,7 @@ acf(consumption)
 per = spectrum(consumption)
 plot(per)
 # get frequency with highest amplitude
-per$freq[which.max(r$spec)]
+per$freq[which.max(per$spec)]
 
 # ------------------------- fit sarima (000)(000) with yearly regressors -------------------------------
 t = 1:length(consumption)
