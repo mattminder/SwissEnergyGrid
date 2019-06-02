@@ -38,6 +38,8 @@ plot(-weeklyT)
 plot(weeklyInt)
 par(mfrow=c(1,1))
 
+# ------------------------- MODEL 1 --------------------------------
+# Regress out winter holidays and temperature, subsequent ARIMA
 # -------------------------- regression ---------------------------
 reg <- lm(weeklyInt ~ holidays + weeklyT)
 res <- weeklyInt - fitted(reg)
@@ -58,3 +60,34 @@ std_res = res_arima$residuals / sd(res_arima$residuals)
 
 qqnorm(std_res)
 qqline(std_res)
+
+# ------------------------- MODEL 2 --------------------------------
+# Regress out winter holidays and fit sinusoidal with multiple 
+# harmonics of period 
+# -------------------------- regression ---------------------------
+per = 365.25/7
+t = 1:length(weeklyInt)
+reg2 <- lm(weeklyInt ~ holidays + 
+            sin(2*pi*t/per)+cos(2*pi*t/per) + 
+            sin(2*pi*t*2/per)+cos(2*pi*t*3/per) + 
+            sin(2*pi*t*3/per)+cos(2*pi*t*4/per) + 
+            sin(2*pi*t*4/per)+cos(2*pi*t*5/per))
+res2 <- weeklyInt - fitted(reg2)
+plot(res2)
+plot(diff(res2))
+
+spectrum(res2)
+par(mfrow= c(2,1))
+Acf(res2)
+Pacf(res2)
+par(mfrow=c(1,1))
+
+# ------------------------- arima fitting --------------------------
+res2_arima <- arima(res2, c(1, 1, 4))
+tsdiag(res2_arima)
+cpgram(res2_arima$residuals)
+std_res2 = res2_arima$residuals / sd(res2_arima$residuals)
+
+qqnorm(std_res2)
+qqline(std_res2)
+
