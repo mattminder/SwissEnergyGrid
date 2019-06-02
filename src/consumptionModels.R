@@ -193,4 +193,11 @@ smotempfit = lm(consumption ~ smooth_temp$y + workday)
 
 smotemp_res = consumption - fitted(smotempfit)
 plot(smotemp_res)
-plot(week_res)
+plot(smotemp_res[50000:56000])
+
+plot(diff(smotemp_res))
+plot(diff(smotemp_res)[50000:56000])
+
+# ------------- stl on residuals -------------------------------------
+#resstl = stl(smotemp_res, "par", robust = T)
+#plot(resstl)
