@@ -6,7 +6,7 @@ library(forecast)
 
 # ------------------------- load the data-------------------------------
 # Set path
-homePath = "/Users/yvesrychener/Studium/TimeSeries/SwissEnergyGrid/"
+homePath = "/Users/myfiles/Documents/EPFL/M_II/TSE/SwissEnergyGrid/"
 dataPath = paste(homePath, "data/", sep="")
 outPath = paste(homePath, "res/Robjects/", sep="")
 
@@ -41,55 +41,78 @@ par(mfrow=c(1,1))
 # ------------------------- MODEL 1 --------------------------------
 # Regress out winter holidays and temperature, subsequent ARIMA
 # -------------------------- regression ---------------------------
-reg <- lm(weeklyInt ~ holidays + weeklyT)
-res <- weeklyInt - fitted(reg)
-plot(res)
-plot(diff(res))
+mod1blank <- arima(weeklyInt/100, 
+              xreg=cbind(holidays, weeklyT))
 
-spectrum(res)
-par(mfrow= c(2,1))
-Acf(diff(res))
-Pacf(diff(res))
+par(mfrow=c(2,1))
+Acf(mod1blank$residuals)
+Acf(diff(mod1blank$residuals))
+
+Pacf(mod1blank$residuals)
+Pacf(diff(mod1blank$residuals))
 par(mfrow=c(1,1))
 
-# ------------------------- arima fitting --------------------------
-res_arima <- arima(res, c(1, 1, 4))
-tsdiag(res_arima)
-cpgram(res_arima$residuals)
-std_res = res_arima$residuals / sd(res_arima$residuals)
 
-qqnorm(std_res)
-qqline(std_res)
+
+mod11 <- arima(weeklyInt/100, order=c(1, 0, 4), 
+              xreg=cbind(holidays, weeklyT))
+tsdiag(mod11)
+
+cpgram(mod11$residuals)
+qqnorm(mod11$residuals)
+qqline(mod11$residuals)
+
+
+mod12 <- arima(weeklyInt/100, order=c(4, 1, 1), 
+              xreg=cbind(holidays, weeklyT))
+tsdiag(mod12)
+
+cpgram(mod12$residuals)
+qqnorm(mod12$residuals)
+qqline(mod12$residuals)
+
 
 # ------------------------- MODEL 2 --------------------------------
 # Regress out winter holidays and fit sinusoidal with multiple 
 # harmonics of period 
 # -------------------------- regression ---------------------------
-per = 365.25/7
+yearPer = 365.25/7
 t = 1:length(weeklyInt)
-reg2 <- lm(weeklyInt ~ holidays + 
-            sin(2*pi*t/per)+cos(2*pi*t/per) + 
-            sin(2*pi*t*2/per)+cos(2*pi*t*2/per) + 
-            sin(2*pi*t*3/per)+cos(2*pi*t*3/per) + 
-            sin(2*pi*t*4/per)+cos(2*pi*t*4/per))
-res2 <- weeklyInt - fitted(reg2)
-plot(res2)
-plot(diff(res2))
 
-spectrum(res2)
-par(mfrow= c(2,1))
-Acf(res2)
-Pacf(res2)
+sy1 <- sin(2*pi*t/yearPer)
+cy1 <- cos(2*pi*t/yearPer)
+sy2 <- sin(2*pi*t*2/yearPer)
+cy2 <- cos(2*pi*t*2/yearPer)
+sy3 <- sin(2*pi*t*3/yearPer)
+cy3 <- cos(2*pi*t*3/yearPer)
+sy4 <- sin(2*pi*t*4/yearPer)
+cy4 <- cos(2*pi*t*4/yearPer)
+sy5 <- sin(2*pi*t*5/yearPer)
+cy5 <- cos(2*pi*t*5/yearPer)
+
+
+mod2blank <- arima(weeklyInt/100,
+                   xreg = cbind(sy1, cy1, sy2, cy2, 
+                                sy3, cy3, sy4, cy4, sy5, cy5))
+
+par(mfrow=c(2,1))
+Acf(mod2blank$residuals)
+Acf(diff(mod2blank$residuals))
+
+Pacf(mod2blank$residuals)
+Pacf(diff(mod2blank$residuals))
 par(mfrow=c(1,1))
 
-# ------------------------- arima fitting --------------------------
-res2_arima <- arima(res2, c(1, 1, 4))
-tsdiag(res2_arima)
-cpgram(res2_arima$residuals)
-std_res2 = res2_arima$residuals / sd(res2_arima$residuals)
+mod2 <- arima(weeklyInt/100, order = c(6, 1, 4),
+                   xreg = cbind(sy1, cy1, sy2, cy2, 
+                                sy3, cy3, sy4, cy4, sy5, cy5))
 
-qqnorm(std_res2)
-qqline(std_res2)
+tsdiag(mod2)
+
+cpgram(mod2$residuals)
+qqnorm(mod2$residuals)
+qqline(mod2$residuals)
+
 
 # ------------------------- Model 3 --------------------------
 #  Sarima without regressors
@@ -97,14 +120,18 @@ qqline(std_res2)
 spectrum(weeklyInt)
 par(mfrow= c(2,1))
 Acf(diff(weeklyInt, lag = 52))
+Acf(weeklyInt)
+Acf(diff(weeklyInt))
+
+Pacf(weeklyInt)
+Pacf(diff(weeklyInt))
 Pacf(diff(weeklyInt, lag = 52))
 par(mfrow=c(1,1))
 # ------------------------- Fitting model --------------------------
-res_sarima = arima(weeklyInt, order=c(0, 0, 3), seasonal = list(order = c(0, 1, 2), period = 52))
+mod3 = arima(weeklyInt, order=c(3, 0, 0), seasonal = list(order = c(0, 1, 2), period = 52))
 
-tsdiag(res_sarima)
-cpgram(res_sarima$residuals)
-std_res_sarima = res_sarima$residuals / sd(res_sarima$residuals)
+tsdiag(mod3)
+cpgram(mod3$residuals)
 
-qqnorm(std_res_sarima)
-qqline(std_res_sarima)
+qqnorm(mod3$residuals)
+qqline(mod3$residuals)
