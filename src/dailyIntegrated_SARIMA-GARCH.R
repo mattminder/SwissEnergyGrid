@@ -127,7 +127,7 @@ meanreg = cbind(matrix(saturdayIx, ncol = 1), matrix(sundayIx, ncol = 1), matrix
 
 
 #msarima <- Arima(dailyInt, order = c(2, 0, 2), seasonal = list(order = c(1, 1, 2), period = 7), xreg = meanreg)
-msarima <- Arima(dailyInt, order = c(2, 0, 2), seasonal = list(order = c(1, 1, 2), period = 7), xreg = meanreg)
+msarima <- Arima(dailyInt, order = c(2, 0, 2), seasonal = list(order = c(0, 1, 2), period = 7), xreg = meanreg)
 tsdiag(msarima)
 cpgram(msarima$residuals)
 std_res = msarima$residuals / sd(msarima$residuals)
@@ -143,7 +143,8 @@ par(mfrow=c(1,1))
 # suggest taking garch(1,1) 
 
 
-# does not work, gives singularity error
+# without sar term does not work, gives singularity error
+msarima <- Arima(dailyInt, order = c(2, 0, 2), seasonal = list(order = c(1, 1, 2), period = 7), xreg = meanreg)
 lnames <- c(paste0("ar", which(sapply(msarima$model$phi, function(th) {
   isTRUE(all.equal(th, 0))
 }))), paste0("ma", which(sapply(msarima$model$theta, function(th) {
@@ -153,7 +154,7 @@ constraints <- rep(list(0), length(lnames))
 names(constraints) <- lnames
 order <- c(length(msarima$model$phi), length(msarima$model$theta))
 
-model <- ugarchspec(variance.model = list(model = "eGARCH", garchOrder = c(0, 0),
+model <- ugarchspec(variance.model = list(model = "eGARCH", garchOrder = c(1, 1),
                         external.regressors = meanreg), 
                         mean.model = list(armaOrder = order, include.mean = TRUE, 
                         external.regressors = meanreg), 
