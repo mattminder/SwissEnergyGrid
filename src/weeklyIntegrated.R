@@ -48,8 +48,8 @@ plot(diff(res))
 
 spectrum(res)
 par(mfrow= c(2,1))
-Acf(res)
-Pacf(res)
+Acf(diff(res))
+Pacf(diff(res))
 par(mfrow=c(1,1))
 
 # ------------------------- arima fitting --------------------------
@@ -69,9 +69,9 @@ per = 365.25/7
 t = 1:length(weeklyInt)
 reg2 <- lm(weeklyInt ~ holidays + 
             sin(2*pi*t/per)+cos(2*pi*t/per) + 
-            sin(2*pi*t*2/per)+cos(2*pi*t*3/per) + 
-            sin(2*pi*t*3/per)+cos(2*pi*t*4/per) + 
-            sin(2*pi*t*4/per)+cos(2*pi*t*5/per))
+            sin(2*pi*t*2/per)+cos(2*pi*t*2/per) + 
+            sin(2*pi*t*3/per)+cos(2*pi*t*3/per) + 
+            sin(2*pi*t*4/per)+cos(2*pi*t*4/per))
 res2 <- weeklyInt - fitted(reg2)
 plot(res2)
 plot(diff(res2))
