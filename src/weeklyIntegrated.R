@@ -6,7 +6,7 @@ library(forecast)
 
 # ------------------------- load the data-------------------------------
 # Set path
-homePath = "/Users/myfiles/Documents/EPFL/M_II/TSE/SwissEnergyGrid/"
+homePath = "/Users/yvesrychener/Studium/TimeSeries/SwissEnergyGrid/"
 dataPath = paste(homePath, "data/", sep="")
 outPath = paste(homePath, "res/Robjects/", sep="")
 
@@ -119,13 +119,15 @@ qqline(mod2$residuals)
 # ------------------------- ACF & PACF --------------------------
 spectrum(weeklyInt)
 par(mfrow= c(2,1))
-Acf(diff(weeklyInt, lag = 52))
-Acf(weeklyInt)
-Acf(diff(weeklyInt))
+Acf(weeklyInt, lag.max = 200)
+Pacf(weeklyInt, lag.max = 200)
 
-Pacf(weeklyInt)
+Acf(diff(weeklyInt, lag = 52), lag.max = 200)
+Pacf(diff(weeklyInt, lag = 52), lag.max = 200)
+
+
+Acf(diff(weeklyInt))
 Pacf(diff(weeklyInt))
-Pacf(diff(weeklyInt, lag = 52))
 par(mfrow=c(1,1))
 # ------------------------- Fitting model --------------------------
 mod3 = arima(weeklyInt, order=c(3, 0, 0), seasonal = list(order = c(0, 1, 2), period = 52))
