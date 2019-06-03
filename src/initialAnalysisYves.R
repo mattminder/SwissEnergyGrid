@@ -6,7 +6,7 @@ library(forecast)
 
 # ------------------------- load the data-------------------------------
 # Set path
-homePath = "/Users/myfiles/Documents/EPFL/M_II/TSE/SwissEnergyGrid/"
+homePath = "/Users/yvesrychener/Studium/TimeSeries/SwissEnergyGrid/"
 dataPath = paste(homePath, "data/", sep="")
 outPath = paste(homePath, "res/Robjects/", sep="")
 
@@ -51,4 +51,27 @@ s_yearly = matrix(sin(2*pi*t/(24*4*365)), ncol = 1)
 c_yearly = matrix(cos(2*pi*t/(24*4*365)), ncol = 1)
 
 regressor = cbind(c_yearly, s_yearly)
-Arima(as.ts(consumption), order = c(0, 0, 0), seasonal = c(0, 0, 0), xreg = regressor)
+fit_yearly = Arima(as.ts(consumption), order = c(0, 0, 0), seasonal = c(0, 0, 0), xreg = regressor)
+
+
+
+# ------------------------- create regressor for weekly behavior -------------------------------
+n_per_week = 24 * 4 * 7
+n_weeks = floor(length(consumption)/n_per_week)
+mat = scale(matrix(consumption[1:(n_weeks*n_per_week)], nrow = n_per_week))
+typical_week = rowMeans(mat)
+week_regressor = matrix(rep(typical_week, n_weeks+1)[1:length(consumption)], ncol=1)
+
+regressor2 = cbind(c_yearly, s_yearly, week_regressor)
+fit_year_weekly = Arima(as.ts(consumption), order = c(0, 0, 0), seasonal = c(0, 0, 0), xreg = regressor2)
+
+
+# ------------------------- ACF analysis -------------------------------
+Acf(fit_year_weekly$residuals, lag.max = 2000) # suggests differencing seasonal 672, seasonality of 96 is weaker
+Pacf(diff(fit_year_weekly$residuals, lag = n_per_week), lag.max = 500) #-> suggests seasonality of 96->daily
+Pacf(diff(fit_year_weekly$residuals, lag = n_per_week), lag.max = 2000) # -> suggests seasonality of 672 -> weekly
+
+
+# fitting arima
+fit_year_weekly = Arima(as.ts(consumption), order = c(1, 0, 1), seasonal = list(order=c(0,1,1),period=n_per_week), xreg = regressor)
+
