@@ -6,7 +6,7 @@ library(forecast)
 
 # ------------------------- load the data-------------------------------
 # Set path
-homePath = "/Users/myfiles/Documents/EPFL/M_II/TSE/SwissEnergyGrid/"
+homePath = "/Users/yvesrychener/Studium/TimeSeries/SwissEnergyGrid/"
 dataPath = paste(homePath, "data/", sep="")
 outPath = paste(homePath, "res/Robjects/", sep="")
 
@@ -91,3 +91,20 @@ std_res2 = res2_arima$residuals / sd(res2_arima$residuals)
 qqnorm(std_res2)
 qqline(std_res2)
 
+# ------------------------- Model 3 --------------------------
+#  Sarima without regressors
+# ------------------------- ACF & PACF --------------------------
+spectrum(weeklyInt)
+par(mfrow= c(2,1))
+Acf(diff(weeklyInt, lag = 52))
+Pacf(diff(weeklyInt, lag = 52))
+par(mfrow=c(1,1))
+# ------------------------- Fitting model --------------------------
+res_sarima = arima(weeklyInt, order=c(0, 0, 3), seasonal = list(order = c(0, 1, 2), period = 52))
+
+tsdiag(res_sarima)
+cpgram(res_sarima$residuals)
+std_res_sarima = res_sarima$residuals / sd(res_sarima$residuals)
+
+qqnorm(std_res_sarima)
+qqline(std_res_sarima)
