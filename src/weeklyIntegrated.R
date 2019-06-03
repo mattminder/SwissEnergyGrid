@@ -146,24 +146,30 @@ par(mfrow=c(1,1))
 # ------------------------- ACF & PACF --------------------------
 spectrum(weeklyInt)
 
-par(mfrow= c(3,1))
+par(mfrow= c(2,1))
 Acf(weeklyInt, lag.max = 200)
-Acf(diff(weeklyInt), lag.max = 200)
-Acf(diff(weeklyInt, lag = 52), lag.max = 200)
-
 Pacf(weeklyInt, lag.max = 200)
-Pacf(diff(weeklyInt), lag.max = 200)
+
+Acf(diff(weeklyInt, lag = 52), lag.max = 200)
 Pacf(diff(weeklyInt, lag = 52), lag.max = 200)
 
+
+Acf(diff(weeklyInt))
+Pacf(diff(weeklyInt))
 par(mfrow=c(1,1))
 # ------------------------- Fitting model --------------------------
-mod3 = arima(weeklyInt/10e6, order=c(0, 1, 1), seasonal = list(order = c(0, 1, 2), period = 52))
+mod3 = arima(weeklyInt/10e3, order=c(1, 0, 2), seasonal = list(order = c(0, 1, 2), period = 52))
 
 tsdiag(mod3)
 cpgram(mod3$residuals)
 
 qqnorm(mod3$residuals)
 qqline(mod3$residuals)
+
+pdf(paste(plotPath, "Weekly_sarima.pdf", sep=""), height=8, width=4,
+    useDingbats=F)
+tsdiag(mod3)
+dev.off()
 
 
 # ------------------------- Model 4 --------------------------
