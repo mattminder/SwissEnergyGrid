@@ -13,14 +13,13 @@ outPath = paste(homePath, "res/Robjects/", sep="")
 
 energyTS = readRDS(paste(outPath, "energyTS.RDS", sep=""))
 
-# Remove first value (incomplete week)
-dailyInt = apply.daily(energyTS$TotConsumption, sum)[-1]
+dailyInt = apply.daily(energyTS$TotConsumption, sum)
 
 # Remove leap days
 remove_leap_days <- function(ts){
   idx = index(ts)
   select <- (format(idx, "%d")=="29" & format(idx, "%m")=="02") | 
-    as.numeric(format(idx, "%Y"))<2009 | as.numeric(format(idx, "%Y"))>=2019
+    as.numeric(format(idx, "%Y"))<2009 | as.numeric(format(idx, "%Y"))>=2018
   result = ts[!select]
 }
 
@@ -70,7 +69,7 @@ holidayIx = christmasIx | goodfridayIx | pentecostIx  |
 freedayIx = weekendIx | holidayIx
 
 saturdayIx = ix$wday == 6
-sundayIx = ix$wday == 1 | holidayIx
+sundayIx = ix$wday == 0 | holidayIx
 
 # -------------------- temperature ------------------------------
 dailyT = apply.daily(energyTS$Temperature, mean)[-1]
@@ -86,6 +85,12 @@ sw1 <- sin(2*pi*t/weekPer)
 cw1 <- cos(2*pi*t/weekPer)
 sw2 <- sin(2*pi*t*2/weekPer)
 cw2 <- cos(2*pi*t*2/weekPer)
+sw3 <- sin(2*pi*t*3/weekPer)
+cw3 <- cos(2*pi*t*3/weekPer)
+sw4 <- sin(2*pi*t*4/weekPer)
+cw4 <- cos(2*pi*t*4/weekPer)
+sw5 <- sin(2*pi*t*5/weekPer)
+cw5 <- cos(2*pi*t*5/weekPer)
 
 sy1 <- sin(2*pi*t/yearPer)
 cy1 <- cos(2*pi*t/yearPer)
@@ -105,12 +110,21 @@ cy5 <- cos(2*pi*t*5/yearPer)
 Acf(diff(dailyInt, 7), lag.max = 100)
 Pacf(diff(dailyInt, 7), lag.max = 100)
 
-mod1 <- arima(dailyInt/100, order=c(1, 0, 3), 
-              seasonal = list(order=c(2, 1, 2), period=7),
-              xreg=cbind(saturdayIx, sundayIx, dailyT, #sw1, cw1, #sw2, cw2,
+mod1blank <- arima(dailyInt/10e9, #order=c(1, 0, 3), 
+              xreg=cbind(saturdayIx, sundayIx, dailyT,
+                         sw1,cw1,sw2,cw2,sw3,cw3,#sw4,cw4,sw5,cw5,
+                         sy1,cy1,sy2,cy2,sy3,cy3,sy4,cy4,sy5,cy5))
+
+Acf(diff(mod1blank$residuals), lag.max = 100)
+Pacf(diff(mod1blank$residuals), lag.max = 100)
+
+
+mod1 <- arima(dailyInt/100, order=c(3, 1, 1), 
+              xreg=cbind(saturdayIx, sundayIx, dailyT, sw1, cw1, sw2, cw2,
                          sy1,cy1,sy2,cy2,sy3,cy3,sy4,cy4,sy5,cy5))
 tsdiag(mod1)
 
+# Still seasonality within residuals
 
 par(mfrow=c(1,1))
 qqnorm(mod1$residuals)
@@ -118,17 +132,61 @@ qqline(mod1$residuals)
 
 
 # --------------------- MODEL 2 ---------------------------------
-# ------- regress out weekly, yearly and holidays, garch --------
-ressq <- mod1$residuals * mod1$residuals
-Acf(ressq)
-Pacf(ressq)
+# ---------- regress out yearly and holidays, sarima ------------
 
-mod2spec <- ugarchspec(variance.model = list(model = "eGARCH", garchOrder = c(1, 1)),
-                       distribution.model = "std")
-mod2 <- ugarchfit(spec = mod2spec, data = mod1$residuals, solver = "hybrid")
+mod2 <- arima(dailyInt/100, order=c(1, 0, 3), 
+              seasonal = list(order=c(2, 1, 2), period=7),
+              xreg=cbind(saturdayIx, sundayIx, dailyT, 
+                         sy1,cy1,sy2,cy2,sy3,cy3,sy4,cy4,sy5,cy5))
 tsdiag(mod2)
 
-Pacf(mod2@fit$residuals)
-Acf(mod1$residuals)
 
-qqnorm(mod2@fit$residuals)
+par(mfrow=c(1,1))
+qqnorm(mod2$residuals)
+qqline(mod2$residuals)
+
+
+
+# --------------------- MODEL 3 ---------------------------------
+# ------------- set weekends and holidays to NA  ----------------
+dailyInt_noWE <- dailyInt
+dailyInt_noWE[saturdayIx] <- NA
+dailyInt_noWE[sundayIx] <- NA
+
+mod3blank <- arima(dailyInt_noWE/100, #order=c(3, 1, 1), 
+                   xreg=cbind(dailyT))
+
+Acf(diff(mod3blank$residuals), na.action = na.interp, lag.max = 100)
+Pacf((mod3blank$residuals), na.action = na.interp, lag.max = 100)
+
+plot(mod3blank$residuals)
+
+
+mod3 <- arima(dailyInt_noWE/100, order=c(2, 1, 2), 
+                   seasonal=list(order=c(0, 1, 1), period=7),
+                   xreg=cbind(dailyT))
+
+
+tsdiag(mod3)
+qqnorm(mod3$residuals)
+qqline(mod3$residuals)
+
+
+
+
+
+
+
+# ressq <- mod1$residuals * mod1$residuals
+# Acf(ressq)
+# Pacf(ressq)
+# 
+# mod2spec <- ugarchspec(variance.model = list(model = "eGARCH", garchOrder = c(1, 1)),
+#                        distribution.model = "std")
+# mod2 <- ugarchfit(spec = mod2spec, data = mod1$residuals, solver = "hybrid")
+# tsdiag(mod2)
+# 
+# Pacf(mod2@fit$residuals)
+# Acf(mod1$residuals)
+# 
+# qqnorm(mod2@fit$residuals)
