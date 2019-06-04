@@ -147,8 +147,8 @@ par(mfrow=c(1,1))
 spectrum(weeklyInt)
 
 par(mfrow= c(3,1))
-Acf(weeklyInt, lag.max = 200)
-Acf(diff(weeklyInt), lag.max = 200)
+#Acf(weeklyInt, lag.max = 200)
+#Acf(diff(weeklyInt), lag.max = 200)
 Acf(diff(weeklyInt, lag = 52), lag.max = 200)
 
 Pacf(weeklyInt, lag.max = 200)
@@ -157,7 +157,7 @@ Pacf(diff(weeklyInt, lag = 52), lag.max = 200)
 
 par(mfrow=c(1,1))
 # ------------------------- Fitting model --------------------------
-mod3 = arima(weeklyInt/10e6, order=c(0, 1, 1), seasonal = list(order = c(0, 1, 2), period = 52))
+mod3 = arima(weeklyInt/10e6, order=c(2, 0, 3), seasonal = list(order = c(0, 1, 2), period = 52))
 
 tsdiag(mod3)
 cpgram(mod3$residuals)
