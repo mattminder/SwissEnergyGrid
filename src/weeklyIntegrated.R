@@ -89,6 +89,35 @@ qqnorm(mod12$residuals)
 qqline(mod12$residuals)
 
 
+# Forecasting
+weeklyT_f = apply.weekly(energyTS$Temperature, mean)[-1]
+weeklyT_f = weeklyT_f[as.numeric(format(index(weeklyT_f), "%Y")) >= 2018][1:52]
+
+weeklyInt_f = apply.weekly(energyTS$TotConsumption, sum)[-1]
+weeklyInt_f = weeklyInt_f[as.numeric(format(index(weeklyInt_f), "%Y")) >= 2018]
+ix_f = index(weeklyInt_f)
+day_f = as.numeric(format(ix_f, "%d"))
+month_f = as.numeric(format(ix_f, "%m"))
+
+holidays_f <- ((month_f==12 & day_f > 24) | (month_f==1 & day_f < 9))[1:52]
+
+predictions_11 = forecast(mod11, h = 52, xreg = cbind(holidays_f, weeklyT_f))
+yl = 'Forecast'
+plot(predictions_11, include = 104, ylab = yl)
+pdf(paste(plotPath, "Weekly_arima_temp_forecast11.pdf", sep=""), height=8, width=4,
+    useDingbats=F)
+plot(predictions_11, include = 104, ylab = yl)
+dev.off()
+
+
+predictions_12 = forecast(mod12, h = 52, xreg = cbind(holidays_f, weeklyT_f))
+yl = 'Forecast'
+plot(predictions_12, include = 104, ylab = yl)
+pdf(paste(plotPath, "Weekly_arima_temp_forecast12.pdf", sep=""), height=8, width=4,
+    useDingbats=F)
+plot(predictions_12, include = 104, ylab = yl)
+dev.off()
+
 # ------------------------- MODEL 2 --------------------------------
 # Regress out winter holidays and fit sinusoidal with multiple 
 # harmonics of period 
@@ -141,7 +170,28 @@ dev.off()
 par(mfrow=c(1,1))
 
 
-# ------------------------- Model 3 -----------------------------
+# Forecasting
+t_forecast = (length(weeklyInt)+1):(length(weeklyInt)+52)
+sy1_f <- sin(2*pi*t_forecast/yearPer)
+cy1_f <- cos(2*pi*t_forecast/yearPer)
+sy2_f <- sin(2*pi*t_forecast*2/yearPer)
+cy2_f <- cos(2*pi*t_forecast*2/yearPer)
+sy3_f <- sin(2*pi*t_forecast*3/yearPer)
+cy3_f <- cos(2*pi*t_forecast*3/yearPer)
+sy4_f <- sin(2*pi*t_forecast*4/yearPer)
+cy4_f <- cos(2*pi*t_forecast*4/yearPer)
+sy5_f <- sin(2*pi*t_forecast*5/yearPer)
+cy5_f <- cos(2*pi*t_forecast*5/yearPer)
+predictions_2 = forecast(mod2, h = 52, xreg = cbind(sy1_f, cy1_f, sy2_f, cy2_f, 
+                                                   sy3_f, cy3_f, sy4_f, cy4_f, sy5_f, cy5_f))
+yl = 'Forecast'
+plot(predictions_2, include = 104, ylab = yl)
+pdf(paste(plotPath, "Weekly_arima_fourier_forecast.pdf", sep=""), height=8, width=4,
+    useDingbats=F)
+plot(predictions_2, include = 104, ylab = yl)
+dev.off()
+
+# ------------------------- Model 3 --------------------------
 #  Sarima without regressors
 # ------------------------- ACF & PACF --------------------------
 spectrum(weeklyInt)
@@ -164,6 +214,7 @@ mod3 = arima(weeklyInt/10e6, order=c(1, 0, 2), seasonal = list(order = c(0, 1, 2
 tsdiag(mod3)
 cpgram(mod3$residuals)
 
+par(mfrow=c(1,1))
 qqnorm(mod3$residuals)
 qqline(mod3$residuals)
 
@@ -172,6 +223,14 @@ pdf(paste(plotPath, "Weekly_sarima.pdf", sep=""), height=8, width=4,
 tsdiag(mod3)
 dev.off()
 
+par(mfrow=c(1,1))
+predictions_3 = forecast(mod3, h = 52)
+plot(predictions_3, include = 104, ylab = yl)
+yl = 'Forecast'
+pdf(paste(plotPath, "Weekly_sarima_forecast.pdf", sep=""), height=8, width=4,
+    useDingbats=F)
+plot(predictions_3, include = 104, ylab = yl)
+dev.off()
 
 # ------------------------- Model 4 --------------------------
 
