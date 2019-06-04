@@ -32,9 +32,13 @@ TODO
 \section{Introduction}
 The energy grid is a highly complex network that has to be tightly controlled by the so-called grid operator in order to assure its well-functioning. In particular, energy consumption has to be at equilibrium with production at all times to avoid blackouts with possibly fatal consequences. It is therefore of great interest to accurately model and forecast the energy consumption, such that the energy made available to the grid can be adjusted accordingly. Moreover, long-term forecasting is of interest to adjust the energy strategy: How much power plants will be needed in the future and should be built? 
 \par
-Within the scope of this work, we therefore aim to generate accurate short- and long-term forecasts for the total energy consumption of the Swiss energy grid. To this effect, we analyze the quarter-hourly grid data between 2009 and 2019 available from the Swiss grid operator, Swissgrid [CITATION!]. We start with weekly integrated data, move on to daily integrated data before tackling the quarter-hourly energy consumption data, thus increasing the model complexity step by step. We thereby hope to create more and more accurate models for the data that are able to capture both long- and short term trends in order to finally create accurate forecasts. 
+Within the scope of this work, we therefore aim to generate accurate forecasts for the total energy consumption of the Swiss energy grid. To this effect, we analyze the quarter-hourly grid data between 2009 and 2019 available from the Swiss grid operator, Swissgrid [CITATION!!!]. We start with weekly integrated data before move on to daily integrated data before tackling the quarter-hourly energy consumption data, thus increasing the model complexity step by step. We thereby hope to create more and more accurate models for the data that are able to capture both long- and short term trends in order to finally create accurate forecasts. REWRITE!!!
 \par
-In order to compare forecast accuracy between the models, we construct our models on the data up to and including 2017. We then assess the accuracy of the forecasts on the data of the year 2018 for model comparison. Furthermore, we rely on the Akaike information criterion (AIC) for estimation of the quality of a given model. 
+In order to compare forecast accuracy between the models, we construct our models on the data up to and including 2017. We then assess the accuracy of the forecasts on the data of the year 2018 for model comparison. 
+\par
+
+
+%Furthermore, we rely on the Akaike information criterion (AIC) for estimation of the quality of a given model. 
 %The work will be structured as follows: In the second chapter, we present exploratory analysis of the data to identify sensible models. In the third chapter, we then [ DO WHAT?!?]. 
 
 \section{Data Exploration}
@@ -90,7 +94,7 @@ We fit both the ARMA(1,4) and the ARIMA(4,1,1) model and compare them in terms o
 \end{figure*}
 
 \subsection{Modeling Seasonality with SARIMA}
-We can also model the seasonality using a seasonal ARIMA model, using a 52 week seasonality. 
+We can also model the seasonality using a seasonal ARIMA model with a 52 week seasonality. 
 
 
 \begin{thebibliography}{00}
