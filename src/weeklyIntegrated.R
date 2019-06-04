@@ -89,6 +89,35 @@ qqnorm(mod12$residuals)
 qqline(mod12$residuals)
 
 
+# Forecasting
+weeklyT_f = apply.weekly(energyTS$Temperature, mean)[-1]
+weeklyT_f = weeklyT_f[as.numeric(format(index(weeklyT_f), "%Y")) >= 2018][1:52]
+
+weeklyInt_f = apply.weekly(energyTS$TotConsumption, sum)[-1]
+weeklyInt_f = weeklyInt_f[as.numeric(format(index(weeklyInt_f), "%Y")) >= 2018]
+ix_f = index(weeklyInt_f)
+day_f = as.numeric(format(ix_f, "%d"))
+month_f = as.numeric(format(ix_f, "%m"))
+
+holidays_f <- ((month_f==12 & day_f > 24) | (month_f==1 & day_f < 9))[1:52]
+
+predictions_11 = forecast(mod11, h = 52, xreg = cbind(holidays_f, weeklyT_f))
+yl = 'Forecast'
+plot(predictions_11, include = 104, ylab = yl)
+pdf(paste(plotPath, "Weekly_arima_temp_forecast11.pdf", sep=""), height=8, width=4,
+    useDingbats=F)
+plot(predictions_11, include = 104, ylab = yl)
+dev.off()
+
+
+predictions_12 = forecast(mod12, h = 52, xreg = cbind(holidays_f, weeklyT_f))
+yl = 'Forecast'
+plot(predictions_12, include = 104, ylab = yl)
+pdf(paste(plotPath, "Weekly_arima_temp_forecast12.pdf", sep=""), height=8, width=4,
+    useDingbats=F)
+plot(predictions_12, include = 104, ylab = yl)
+dev.off()
+
 # ------------------------- MODEL 2 --------------------------------
 # Regress out winter holidays and fit sinusoidal with multiple 
 # harmonics of period 
