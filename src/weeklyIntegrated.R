@@ -7,7 +7,7 @@ library(ggplot2)
 
 # ------------------------- load the data-------------------------------
 # Set path
-homePath = "/Users/yvesrychener/Studium/TimeSeries/SwissEnergyGrid/"
+homePath = "/Users/myfiles/Documents/EPFL/M_II/TSE/SwissEnergyGrid/"
 dataPath = paste(homePath, "data/", sep="")
 outPath = paste(homePath, "res/Robjects/", sep="")
 plotPath = paste(homePath, "res/plots/", sep="")
@@ -238,6 +238,7 @@ dev.off()
 #  Sarima without regressors
 # ------------------------- ACF & PACF --------------------------
 spectrum(weeklyInt)
+
 
 par(mfrow= c(2,1))
 Acf(weeklyInt, lag.max = 200)
