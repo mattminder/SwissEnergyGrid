@@ -3,6 +3,7 @@ library(gdata)
 library(xts)
 library(dplyr)
 library(forecast)
+library(ggplot2)
 
 # ------------------------- load the data-------------------------------
 # Set path
@@ -93,7 +94,7 @@ qqline(mod12$residuals)
 weeklyT_f = apply.weekly(energyTS$Temperature, mean)[-1]
 weeklyT_f = weeklyT_f[as.numeric(format(index(weeklyT_f), "%Y")) >= 2018][1:52]
 
-weeklyInt_f = apply.weekly(energyTS$TotConsumption, sum)[-1]
+weeklyInt_f = apply.weekly(energyTS$TotConsumption, sum)[-1]/10e6
 weeklyInt_f = weeklyInt_f[as.numeric(format(index(weeklyInt_f), "%Y")) >= 2018]
 ix_f = index(weeklyInt_f)
 day_f = as.numeric(format(ix_f, "%d"))
@@ -103,19 +104,47 @@ holidays_f <- ((month_f==12 & day_f > 24) | (month_f==1 & day_f < 9))[1:52]
 
 predictions_11 = forecast(mod11, h = 52, xreg = cbind(holidays_f, weeklyT_f))
 yl = 'Forecast'
-plot(predictions_11, include = 104, ylab = yl)
-pdf(paste(plotPath, "Weekly_arima_temp_forecast11.pdf", sep=""), height=8, width=4,
+predictions_11 %>%
+    autoplot(include = 104, ylab = yl) +
+    geom_line(
+        aes(
+            x = as.numeric(time(predictions_11$mean)),
+            y = as.numeric(weeklyInt_f[1:52])
+        ),
+        col = "red")
+pdf(paste(plotPath, "Weekly_arima_temp_forecast11.pdf", sep=""), height=4, width=8,
     useDingbats=F)
-plot(predictions_11, include = 104, ylab = yl)
+predictions_11 %>%
+    autoplot(include = 104, ylab = yl) +
+    geom_line(
+        aes(
+            x = as.numeric(time(predictions_11$mean)),
+            y = as.numeric(weeklyInt_f[1:52])
+        ),
+        col = "red")
 dev.off()
 
 
 predictions_12 = forecast(mod12, h = 52, xreg = cbind(holidays_f, weeklyT_f))
 yl = 'Forecast'
-plot(predictions_12, include = 104, ylab = yl)
-pdf(paste(plotPath, "Weekly_arima_temp_forecast12.pdf", sep=""), height=8, width=4,
+predictions_12 %>%
+    autoplot(include = 104, ylab = yl) +
+    geom_line(
+        aes(
+            x = as.numeric(time(predictions_12$mean)),
+            y = as.numeric(weeklyInt_f[1:52])
+        ),
+        col = "red")
+pdf(paste(plotPath, "Weekly_arima_temp_forecast12.pdf", sep=""), height=4, width=8,
     useDingbats=F)
-plot(predictions_12, include = 104, ylab = yl)
+predictions_12 %>%
+    autoplot(include = 104, ylab = yl) +
+    geom_line(
+        aes(
+            x = as.numeric(time(predictions_12$mean)),
+            y = as.numeric(weeklyInt_f[1:52])
+        ),
+        col = "red")
 dev.off()
 
 # ------------------------- MODEL 2 --------------------------------
@@ -185,10 +214,24 @@ cy5_f <- cos(2*pi*t_forecast*5/yearPer)
 predictions_2 = forecast(mod2, h = 52, xreg = cbind(sy1_f, cy1_f, sy2_f, cy2_f, 
                                                    sy3_f, cy3_f, sy4_f, cy4_f, sy5_f, cy5_f))
 yl = 'Forecast'
-plot(predictions_2, include = 104, ylab = yl)
-pdf(paste(plotPath, "Weekly_arima_fourier_forecast.pdf", sep=""), height=8, width=4,
+predictions_2 %>%
+    autoplot(include = 104, ylab = yl) +
+    geom_line(
+        aes(
+            x = as.numeric(time(predictions_12$mean)),
+            y = as.numeric(weeklyInt_f[1:52])
+        ),
+        col = "red")
+pdf(paste(plotPath, "Weekly_arima_fourier_forecast.pdf", sep=""), height=4, width=8,
     useDingbats=F)
-plot(predictions_2, include = 104, ylab = yl)
+predictions_2 %>%
+    autoplot(include = 104, ylab = yl) +
+    geom_line(
+        aes(
+            x = as.numeric(time(predictions_12$mean)),
+            y = as.numeric(weeklyInt_f[1:52])
+        ),
+        col = "red")
 dev.off()
 
 # ------------------------- Model 3 --------------------------
@@ -225,11 +268,25 @@ dev.off()
 
 par(mfrow=c(1,1))
 predictions_3 = forecast(mod3, h = 52)
-plot(predictions_3, include = 104, ylab = yl)
+predictions_3 %>%
+    autoplot(include = 104, ylab = yl) +
+    geom_line(
+        aes(
+            x = as.numeric(time(predictions_12$mean)),
+            y = as.numeric(weeklyInt_f[1:52])
+        ),
+        col = "red")
 yl = 'Forecast'
-pdf(paste(plotPath, "Weekly_sarima_forecast.pdf", sep=""), height=8, width=4,
+pdf(paste(plotPath, "Weekly_sarima_forecast.pdf", sep=""), height=4, width=8,
     useDingbats=F)
-plot(predictions_3, include = 104, ylab = yl)
+predictions_3 %>%
+    autoplot(include = 104, ylab = yl) +
+    geom_line(
+        aes(
+            x = as.numeric(time(predictions_12$mean)),
+            y = as.numeric(weeklyInt_f[1:52])
+        ),
+        col = "red")
 dev.off()
 
 # ------------------------- Model 4 --------------------------
