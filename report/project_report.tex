@@ -32,7 +32,7 @@ TODO
 \section{Introduction}
 The energy grid is a highly complex network that has to be tightly controlled by the so-called grid operator in order to assure its well-functioning. In particular, energy consumption has to be at equilibrium with production at all times to avoid blackouts with possibly fatal consequences. It is therefore of great interest to accurately model and forecast the energy consumption, such that the energy made available to the grid can be adjusted accordingly. Moreover, long-term forecasting is of interest to adjust the energy strategy: How much power plants will be needed in the future and should be built? 
 \par
-Within the scope of this work, we therefore aim to generate accurate forecasts for the total energy consumption of the Swiss energy grid. To this effect, we analyze the quarter-hourly grid data between 2009 and 2019 available from the Swiss grid operator, Swissgrid [CITATION!!!]. We start with weekly integrated data before move on to daily integrated data before tackling the quarter-hourly energy consumption data, thus increasing the model complexity step by step. We thereby hope to create more and more accurate models for the data that are able to capture both long- and short term trends in order to finally create accurate forecasts. REWRITE!!!
+Within the scope of this work, we therefore aim to generate accurate forecasts for the total energy consumption of the Swiss energy grid. To this effect, we analyze the quarter-hourly grid data between 2009 and 2019 available from the Swiss grid operator, Swissgrid [CITATION!!!]. We start with weekly integrated data before we move on to daily integrated data before tackling the quarter-hourly energy consumption data, thus increasing the model complexity step by step. We thereby hope to create more and more accurate models for the data that are able to capture both long- and short term trends in order to finally create accurate forecasts. REWRITE!!!
 \par
 In order to compare forecast accuracy between the models, we construct our models on the data up to and including 2017. We then assess the accuracy of the forecasts on the data of the year 2018 for model comparison. 
 \par
@@ -96,10 +96,18 @@ We fit both the ARMA(1,4) and the ARIMA(4,1,1) model and compare them in terms o
 \subsection{Modeling Seasonality with SARIMA}
 We can also model the seasonality using a seasonal ARIMA model with a 52 week seasonality. 
 
+\section{15min Data}
+We now look at the data in the 15 minute timeframe. This is the timeframe provided by SWISSGRID. When we look at the time series itself and the Acf plot in figure \ref{15min}, we can see that there are at least 3 seasonalities. They are daily (lag 96), weekly (lag 672) and yearly (lag 35040). This also aligns with our intuition: In addition to the weekly patterns (weekend) and yearly patterns (summer-winter), we expect to have a daily pattern (day-night).
+\subsection{Modeling Seasonality with TBATS}
+Normal SARIMA models don’t support multiple seasonalities. We therefore resort to another model called TBATS (\textbf{T}rigonometric, \textbf{B}ox-Cox transform, \textbf{A}RMA errors, \textbf{T}rend and \textbf{S}easonal components) proposed by De Livera, Alysha M., Rob J. Hyndman and Ralph D. Snyder \cite{TBATS_paper}. The TBATS model uses a Fourier series to model each seasonality. Box-Cox transformations are also incorporated and the residuals are modeled using an ARMA model.
+The result is not convincing however. The residuals are clearly neither gaussian nor white noise (Figure \ref{15min}). Clearly, more work would have to be done to obtain a good result here. For example, one could use the predictions from our previous models for higher time-frames as covariates for a model. After obtaining the prediction for the day, we could limit ourself to just modeling the daily evolution. However we would have to take into account the fact that weekends have a different pattern than weekdays. Also, the confidence bands  of the `forecast`-function could not be trusted at all, since they don’t take into account uncertainty of the exogenous variable.
 
-\begin{thebibliography}{00}
+\begin{thebibliography}{9}
 
-\item
+\bibitem{TBATS_paper}
+De Livera, Alysha M., Rob J. Hyndman, and Ralph D. Snyder. "Forecasting time series with complex seasonal patterns using exponential smoothing." Journal of the American Statistical Association 106.496 (2011): 1513-1527.
+APA	
+
 \end{thebibliography}
 
 \end{document}
