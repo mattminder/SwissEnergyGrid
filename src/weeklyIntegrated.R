@@ -211,6 +211,7 @@ sy4_f <- sin(2*pi*t_forecast*4/yearPer)
 cy4_f <- cos(2*pi*t_forecast*4/yearPer)
 sy5_f <- sin(2*pi*t_forecast*5/yearPer)
 cy5_f <- cos(2*pi*t_forecast*5/yearPer)
+
 predictions_2 = forecast(mod2, h = 52, xreg = cbind(sy1_f, cy1_f, sy2_f, cy2_f, 
                                                    sy3_f, cy3_f, sy4_f, cy4_f, sy5_f, cy5_f))
 yl = 'Forecast'
