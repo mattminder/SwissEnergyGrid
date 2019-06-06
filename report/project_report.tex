@@ -94,15 +94,15 @@ We fit both the ARMA(1,4) and the ARIMA(4,1,1) model and compare them in terms o
 \end{figure*}
 
 \subsection{Modeling Seasonality with SARIMA}
-We can also model the seasonality using a seasonal ARIMA model with a 52 week seasonality. 
+We can also model the seasonality using a seasonal ARIMA model with a 52 week seasonality. The ACF and PACF plots suggest taking D=1. After seasonal differencing, the ACF and PACF suggest taking a SMA(2) model. The non-sesonal component is less clear and we settle on an ARMA(1,2) model. The resulting model is SARIMA(1,0,2)(0,1,2)\textsubscript{52}. The resulting diagnostic plots look good with slight non-guassianity in the qq-plot. The AIC is 2312.1, which is substantially better than the other models examined before.
 
 \section{15min Data}
-We now look at the data in the 15 minute timeframe. This is the timeframe provided by SWISSGRID. When we look at the time series itself and the Acf plot in figure \ref{15min}, we can see that there are at least 3 seasonalities. They are daily (lag 96), weekly (lag 672) and yearly (lag 35040). This also aligns with our intuition: In addition to the weekly patterns (weekend) and yearly patterns (summer-winter), we expect to have a daily pattern (day-night).
+We now look at the data in the 15 minute timeframe. This is the timeframe provided by SWISSGRID. When we look at the time series itself and the ACF plot in figure \ref{15min}, we can see that there are at least 3 seasonalities. They are daily (lag 96), weekly (lag 672) and yearly (lag 35040). This also aligns with our intuition: In addition to the weekly patterns (weekend) and yearly patterns (summer-winter), we expect to have a daily pattern (day-night).
 \subsection{Modeling Seasonality with TBATS}
 Normal SARIMA models don’t support multiple seasonalities. We therefore resort to another model called TBATS (\textbf{T}rigonometric, \textbf{B}ox-Cox transform, \textbf{A}RMA errors, \textbf{T}rend and \textbf{S}easonal components) proposed by De Livera, Alysha M., Rob J. Hyndman and Ralph D. Snyder \cite{TBATS_paper}. The TBATS model uses a Fourier series to model each seasonality. Box-Cox transformations are also incorporated and the residuals are modeled using an ARMA model.
 The result is not convincing however. The residuals are clearly neither gaussian nor white noise (Figure \ref{15min}). Clearly, more work would have to be done to obtain a good result here. For example, one could use the predictions from our previous models for higher time-frames as covariates for a model. After obtaining the prediction for the day, we could limit ourself to just modeling the daily evolution. However we would have to take into account the fact that weekends have a different pattern than weekdays. Also, the confidence bands  of the `forecast`-function could not be trusted at all, since they don’t take into account uncertainty of the exogenous variable.
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{00}
 
 \bibitem{TBATS_paper}
 De Livera, Alysha M., Rob J. Hyndman, and Ralph D. Snyder. "Forecasting time series with complex seasonal patterns using exponential smoothing." Journal of the American Statistical Association 106.496 (2011): 1513-1527.
