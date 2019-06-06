@@ -32,7 +32,7 @@ TODO
 \section{Introduction}
 The energy grid is a highly complex network that has to be tightly controlled by the so-called grid operator in order to assure its well-functioning. In particular, energy consumption has to be at equilibrium with production at all times to avoid blackouts with possibly fatal consequences. It is therefore of great interest to accurately model and forecast the energy consumption, such that the energy made available to the grid can be adjusted accordingly. Moreover, long-term forecasting is of interest to adjust the energy strategy: How much power plants will be needed in the future and should be built? 
 \par
-Within the scope of this work, we therefore aim to generate accurate forecasts for the total energy consumption of the Swiss energy grid. To this effect, we analyze the quarter-hourly grid data between 2009 and 2019 available from the Swiss grid operator, Swissgrid [CITATION!!!]. We start with weekly integrated data before we move on to daily integrated data before tackling the quarter-hourly energy consumption data, thus increasing the model complexity step by step. We thereby hope to create more and more accurate models for the data that are able to capture both long- and short term trends in order to finally create accurate forecasts. REWRITE!!!
+Within the scope of this work, we therefore aim to generate accurate forecasts for the total energy consumption of the Swiss energy grid. To this effect, we analyze the quarter-hourly grid data between 2009 and 2019 available from the Swiss grid operator, Swissgrid [CITATION!!!]. We start with weekly integrated data before we move on to daily integrated data before tackling the quarter-hourly energy consumption data, thus increasing the model complexity step by step. We thereby hope to create more and more accurate models for the data that are able to capture both long- and short term trends in order to finally create accurate forecasts.
 \par
 In order to compare forecast accuracy between the models, we construct our models on the data up to and including 2017. We then assess the accuracy of the forecasts on the data of the year 2018 for model comparison. 
 \par
@@ -53,8 +53,6 @@ We start off our analysis with an exploratory data analysis. The full time serie
 Moreover, on the plot of the full time series we observe a sharp drop in energy consumption around Christmas and New Year. The same applies for other public holidays such as the first of August or  easter. Note that the public holidays vary from canton to canton, but the following ones are common to most cantons: January first and second, Good Friday, Easter Monday, Ascension, Pentecost Monday, the first of August (the Swiss national day), and finally the 25. and 26 of December. 
 \par
 
-\par
-
 
 \section{Weekly Integrated Data}
 We begin by considering weekly integrated data. A plot of the resulting time series can be seen in Figure \ref{weekly}. The integrated data only exhibits a yearly seasonality, whereas the daily and weekly seasonal patterns are removed through the integration. There are multiple approaches that can be considered in order to allow for that seasonality, three of which are outlined in the following sections. Moreover, from the plot in Figure \ref{weekly} it becomes apparent that the energy consumption systematically drops in the weeks around New Year. In order to take this into account, we label weeks that end between December 25th and January 8th as holiday weeks and treat them specially. 
@@ -72,6 +70,7 @@ A simple, intuitive approach is to regress out a sinusoidal pattern while fittin
 The ACF and PACF of the regression residuals can be seen on the left side of Figure \ref{weekly_mod1}. The ACF of the residuals still shows some periodic structure, which is not completely removed through differencing. This seasonal structure is not present in the PACF. Looking at the ACF and PACF plots, it is not obvious what the optimal ARIMA parameters are, but $p=6$, $d=1$ and $q=4$ seem to be a reasonable choice. 
 \par
 Fitting an ARIMA(6,1,4) model with the aforementioned regressors yields an AIC of 2586.7. The model diagnostics can be seen on the right side of Figure \ref{weekly_mod1}. A visual inspection of the standardized residuals and ACF suggests that no apparent seasonal patterns remain after model fitting. Moreover, the p-values of the Ljung-Box indicate that the residuals do not exhibit serial correlation. The cumulative periodogram suggests that the residuals are white noise. However, the Q-Q plot of the residuals exhibits heavy tails, suggesting that the residuals do not follow a normal distribution.
+
 \begin{figure*}[ht]
 	\centering
 	\includegraphics[width=1\textwidth]{Figs/Fig3.pdf}
@@ -118,7 +117,6 @@ The heavy-tailed normal distribution could be indicative of a GARCH structure wi
 	\caption{}
 	\label{daily_sarima}
 \end{figure*}
-
 
 \subsection{Removing Non-Work Days from Data}
 In an attempt to further better our model, we subsequently removed all non-work days (i.e. Saturdays, Sundays and public holidays) from our data by setting them to \texttt{NA}. We argue that an appropriate model only for work days are still highly relevant, since it models more than 2/3 of the year and since consumption on work days is considerably higher than on free days. 

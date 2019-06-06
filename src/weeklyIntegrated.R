@@ -241,10 +241,11 @@ dev.off()
 spectrum(weeklyInt)
 
 
-par(mfrow= c(2,1))
+par(mfrow=c(2,1))
 Acf(weeklyInt, lag.max = 200)
 Pacf(weeklyInt, lag.max = 200)
 
+par(mfrow=c(2,1))
 Acf(diff(weeklyInt, lag = 52), lag.max = 200)
 Pacf(diff(weeklyInt, lag = 52), lag.max = 200)
 
@@ -255,17 +256,32 @@ par(mfrow=c(1,1))
 # ------------------------- Fitting model --------------------------
 mod3 = arima(weeklyInt/10e6, order=c(1, 0, 2), seasonal = list(order = c(0, 1, 2), period = 52))
 
-tsdiag(mod3)
-cpgram(mod3$residuals)
+pdf(paste(plotPath, "Weekly_Sarima_before.pdf", sep=""), height=8, width=8)
+par(mfrow=c(2,2))
+Acf(weeklyInt, lag.max = 200)
+Acf(diff(weeklyInt, lag = 52), lag.max = 200)
 
+Pacf(weeklyInt, lag.max = 200)
+Pacf(diff(weeklyInt, lag = 52), lag.max = 200)
 par(mfrow=c(1,1))
-qqnorm(mod3$residuals)
-qqline(mod3$residuals)
+dev.off()
 
-pdf(paste(plotPath, "Weekly_sarima.pdf", sep=""), height=8, width=4,
+
+pdf(paste(plotPath, "Weekly_Sarima_diag.pdf", sep=""), height=8, width=4,
     useDingbats=F)
 tsdiag(mod3)
 dev.off()
+
+pdf(paste(plotPath, "Weekly_Sarima_diag2.pdf", sep=""), height=8, width=4,
+    useDingbats=F)
+par(mfrow=c(2,1))
+cpgram(mod3$residuals)
+qqnorm(mod3$residuals)
+qqline(mod3$residuals)
+dev.off()
+par(mfrow=c(1,1))
+
+
 
 par(mfrow=c(1,1))
 predictions_3 = forecast(mod3, h = 52)
@@ -307,6 +323,8 @@ mod4 <- arima(weeklyInt/10e9,
               seasonal=list(order=c(1,1,1), period=52),
               order=c(4,1,1))
               #order=c(1,0,4))
+
+
 tsdiag(mod4)
 par(mfrow=c(1,1))
 cpgram(mod4$residuals)
