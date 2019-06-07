@@ -97,13 +97,15 @@ We can also model the seasonality using a seasonal ARIMA model with a 52 week se
 \par
 The resulting diagnostic plots look good with slight non-gaussianity in the qq-plot. The AIC is 2312.1, which is substantially better than the other models examined before.
 
+
+
 \section{Daily Integrated Data}
 Having obtained reasonable models for weekly integrated data, we refine the temporal step to daily integrated data. This coarser version reveals a second level of seasonality, the variation in energy consumption throughout the week. To ease computation we remove leap days from our analysis. Moreover, in order to handle work-free days appropriately, we create a categorical variable for Saturdays and a categorical variable for Sundays and the most widespread public holidays. 
 
 \subsection{Modeling Seasonality with Sine and Cosine}
 The first approach to modeling seasonality we took was to fit an ARIMA model with sine and cosine regressors with a weekly and a yearly period in addition to the aforementioned regressors for work-free days. After fitting the model, there still was considerable yearly and weekly structure present in the residuals (data not shown), indicating that another approach for modeling the multiple seasonality has to be taken. In addition, adding temperature as regressor did not improve the model. 
 
-\subsection{Weekly Seasonality with SARIMA}
+\subsection{Modeling Weekly Seasonality with SARIMA}
 We therefore in a second approach model the weekly seasonality using a SARIMA model with period $T=7$ and remove the yearly structure by using sine and cosine regressors. Moreover, we add the Saturday and Sunday/holiday indicator variables as regressors. 
 \par
 A good fit was obtained using a $SARIMA(3, 0, 1)\times(2, 1, 2)_{7}$ model. The cumulative periodogram and Ljung-Box test shown in Figure \ref{daily_sarima} suggest that the residuals seem independent and are white noise. However, they follow a more heavy-tailed distribution than the normal distribution, as shown by the QQ plot. Moreover, looking at the ACF, we see that there is still some remaining structure within the residuals, among which notably a remaining yearly periodicity. Note that again, incorporating temperature as a regressor did not increase the quality of the fit.
@@ -133,10 +135,24 @@ We found that $SARIMA(2, 1, 2) \times (0, 1, 1)_7$ yields a good fit. The corres
 
 \section{15min Data}
 We now look at the data in the 15 minute timeframe, as present in the original data provided by SWISSGRID. When we look at the time series itself and the ACF plot in figure \ref{15min}, we can see that there are at least 3 seasonalities. They are daily (lag 96), weekly (lag 672) and yearly (lag 35040). This also aligns with our intuition: In addition to the weekly patterns (weekend) and yearly patterns (summer-winter), we expect to have a daily pattern (day-night).
+
 \subsection{Modeling Seasonality with TBATS}
 Normal SARIMA models don’t support multiple seasonalities. We therefore resort to another model called TBATS (\textbf{T}rigonometric, \textbf{B}ox-Cox transform, \textbf{A}RMA errors, \textbf{T}rend and \textbf{S}easonal components) proposed by De Livera, Alysha M., Rob J. Hyndman and Ralph D. Snyder \cite{TBATS_paper}. The TBATS model uses a Fourier series to model each seasonality. Box-Cox transformations are also incorporated and the residuals are modeled using an ARMA model.
 \par
 The result is not convincing however. The residuals are clearly neither gaussian nor white noise (Figure \ref{15min}). Clearly, more work would have to be done to obtain a good result here. For example, one could use the predictions from our previous models for higher time-frames as covariates for a model. After obtaining the prediction for the day, we could limit ourself to just modeling the daily evolution. However we would have to take into account the fact that weekends have a different pattern than weekdays. Also, the confidence bands  of the `forecast`-function could not be trusted at all, since they don’t take into account uncertainty of the exogenous variable.
+
+\section{Forecasting}
+
+
+\section{Conclusion}
+In conclusion, we were able to generate accurate models on the coarse weekly level containing only one - the yearly - seasonality. This model can be used to generate accurate forecasts for the long-term future. 
+\par
+However, when refining the temporal step to daily consumption, modeling becomes significantly more difficult. A particular challenge is to accurately model the energy consumption during the days of the week which are work-free, since the consumption pattern is considerably different from work days. Not surprisingly, we obtain the best model for daily data by simply disregarding work-free days. This reduced model is still valuable to network operators as it accurately models the majority of days of the year.
+\par
+The task becomes even more difficult when considering quarter-hourly data. The energy consumption throughout the day follows a particular pattern, which is again very different on work- and work free days. While the model we provide creates reasonable forecasts, the confidence intervals are very large. More work has thus to be done in order to create a better model for intra-day consumption data.
+\par
+
+
 
 \begin{thebibliography}{00}
 
