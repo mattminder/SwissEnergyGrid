@@ -25,9 +25,8 @@ yves.rychener@epfl.ch}}
 \maketitle
 
 \begin{abstract}
-TODO
+Modeling and forecasting energy consumption is of high relevance to the grid operator and energy providers. We analyze total energy consumption in Switzerland at a weekly, daily and quarter-hourly level with the aim to create accurate forecasts. Despite the challenging, irregular nature of the data, we are able to obtain reasonable long-term forecasts for coarse time levels. However, more work needs to be done to obtain good forecasts at a smaller temporal resolution.
 \end{abstract}
-
 
 \section{Introduction}
 The energy grid is a highly complex network that has to be tightly controlled by the so-called grid operator in order to assure its well-functioning. In particular, energy consumption has to be at equilibrium with production at all times to avoid blackouts with possibly fatal consequences. It is therefore of great interest to accurately model and forecast the energy consumption, such that the energy made available to the grid can be adjusted accordingly. Moreover, long-term forecasting is of interest to adjust the energy strategy: How much power plants will be needed in the future and should be built? 
@@ -36,10 +35,7 @@ Within the scope of this work, we therefore aim to generate accurate forecasts f
 \par
 In order to compare forecast accuracy between the models, we construct our models on the data up to and including 2017. We then assess the accuracy of the forecasts on the data of the year 2018 for model comparison. 
 \par
-
-
-%Furthermore, we rely on the Akaike information criterion (AIC) for estimation of the quality of a given model. 
-%The work will be structured as follows: In the second chapter, we present exploratory analysis of the data to identify sensible models. In the third chapter, we then [ DO WHAT?!?]. 
+It seems intuitive that energy consumption at least in part negatively relates to temperature, since high temperatures require less energy consumption for electrical heating. We therefore use the average temperature series of five locations spread throughout Switzerland made available by Agroscope as regressors for some of our models [Citation!!!]. The data is originally 10 minutely, a quarter-hourly time series is obtained through linear interpolation.  
 
 \section{Data Exploration}
 \begin{figure*}[ht]
@@ -60,7 +56,7 @@ We begin by considering weekly integrated data. A plot of the resulting time ser
 \begin{figure*}[ht]
 	\centering
 	\includegraphics[width=1\textwidth]{Figs/weeklyInt+Temperature.pdf}
-	\caption{}
+	\caption{Top: Weekly consumption. Bottom: Average weekly temperature (negative scale).}
 	\label{weekly}
 \end{figure*}
 
@@ -74,7 +70,7 @@ Fitting an ARIMA(6,1,4) model with the aforementioned regressors yields an AIC o
 \begin{figure*}[ht]
 	\centering
 	\includegraphics[width=1\textwidth]{Figs/Fig3.pdf}
-	\caption{}
+	\caption{Left: ACF and PACF of weekly data after adding sine and cosine regressors. Right: Diagnostic plots for ARIMA model with sine and cosine regressors.}
 	\label{weekly_mod1}
 \end{figure*}
 
@@ -88,15 +84,20 @@ We fit both the ARMA(1,4) and the ARIMA(4,1,1) model and compare them in terms o
 \begin{figure*}[ht]
 	\centering
 	\includegraphics[width=1\textwidth]{Figs/Fig4.pdf}
-	\caption{}
+	\caption{Left: ACF and PACF of weekly data after adding temperature regressor. Right: Diagnostic plots for ARIMA model with temperature regressor.}
 	\label{weekly_mod2}
 \end{figure*}
 
-\subsection{Modeling Seasonality with SARIMA}
-We can also model the seasonality using a seasonal ARIMA model with a 52 week seasonality. Visual inspection of the ACF and PACF plots suggest taking $D=1$. After seasonal differencing, the ACF and PACF suggest taking a SMA(2) model. The non-seasonal component is less clear and we settle on an ARMA(1,2) model. The resulting model is $SARIMA(1,0,2)\times(0,1,2)_{52}$. 
+\subsection{Modeling Yearly Seasonality with SARIMA}
+We can also model the seasonality using a seasonal ARIMA model with a 52 week seasonality. Visual inspection of the ACF and PACF plots shown in Figure \ref{Fig5} suggest taking $D=1$. After seasonal differencing, the ACF and PACF suggest taking a SMA(2) model. The non-seasonal component is less clear and we settle on an ARMA(1,2) model. The resulting model is $SARIMA(1,0,2)\times(0,1,2)_{52}$. 
 \par
 The resulting diagnostic plots look good with slight non-gaussianity in the qq-plot. The AIC is 2312.1, which is substantially better than the other models examined before.
-
+\begin{figure*}[ht]
+	\centering
+	\includegraphics[width=1\textwidth]{Figs/Fig5.pdf}
+	\caption{Left: ACF and PACF of weekly data, as well as with lag 52 differencing. Right: Diagnostic plots for SARIMA model with yearly seasonality. }
+	\label{weekly_mod2}
+\end{figure*}
 
 
 \section{Daily Integrated Data}
@@ -109,14 +110,14 @@ The first approach to modeling seasonality we took was to fit an ARIMA model wit
 We therefore in a second approach model the weekly seasonality using a SARIMA model with period $T=7$ and remove the yearly structure by using sine and cosine regressors. Moreover, we add the Saturday and Sunday/holiday indicator variables as regressors. 
 \par
 A good fit was obtained using a $SARIMA(3, 0, 1)\times(2, 1, 2)_{7}$ model. The cumulative periodogram and Ljung-Box test shown in Figure \ref{daily_sarima} suggest that the residuals seem independent and are white noise. However, they follow a more heavy-tailed distribution than the normal distribution, as shown by the QQ plot. Moreover, looking at the ACF, we see that there is still some remaining structure within the residuals, among which notably a remaining yearly periodicity. Note that again, incorporating temperature as a regressor did not increase the quality of the fit.
-%visual inspection of the residuals still shows yearly structure, with large variance peaks around new year.
+
 \par
 The heavy-tailed normal distribution could be indicative of a GARCH structure within the data. Additionally, considering the residuals in Figure \ref{daily_sarima} it seems that the volatility increases towards the end of the time series. However, fitting a GARCH model did not yield satisfactory results. The resulting residuals were highly correlated and clearly not white noise according to the cumulative periodograms (data not shown).
 
 \begin{figure*}[ht]
 	\centering
 	\includegraphics[width=1\textwidth]{Figs/Fig6.pdf}
-	\caption{}
+	\caption{Diagnostic plots for SARIMA model for daily consumption with weekly seasonality.}
 	\label{daily_sarima}
 \end{figure*}
 
@@ -128,21 +129,46 @@ We found that $SARIMA(2, 1, 2) \times (0, 1, 1)_7$ yields a good fit. The corres
 \begin{figure*}[ht]
 	\centering
 	\includegraphics[width=1\textwidth]{Figs/Fig7.pdf}
-	\caption{}
+	\caption{Diagnostic plots for daily model, where work-free days were set to NA. The ACF plots were generated using the option \texttt{na.pass} to handle the missing values.}
 	\label{daily_nowe}
 \end{figure*}
 
 
 \section{15min Data}
-We now look at the data in the 15 minute timeframe, as present in the original data provided by SWISSGRID. When we look at the time series itself and the ACF plot in figure \ref{15min}, we can see that there are at least 3 seasonalities. They are daily (lag 96), weekly (lag 672) and yearly (lag 35040). This also aligns with our intuition: In addition to the weekly patterns (weekend) and yearly patterns (summer-winter), we expect to have a daily pattern (day-night).
-
-\subsection{Modeling Seasonality with TBATS}
+We now look at the data in the 15 minute timeframe, as present in the original data provided by SWISSGRID. When we look at the time series itself and the ACF plot in figure \ref{fig8}, we can see that there are at least 3 seasonalities. They are daily (lag 96), weekly (lag 672) and yearly (lag 35040). This also aligns with our intuition: In addition to the weekly patterns (weekend) and yearly patterns (summer-winter), we expect to have a daily pattern (day-night).
+\par
 Normal SARIMA models don’t support multiple seasonalities. We therefore resort to another model called TBATS (\textbf{T}rigonometric, \textbf{B}ox-Cox transform, \textbf{A}RMA errors, \textbf{T}rend and \textbf{S}easonal components) proposed by De Livera, Alysha M., Rob J. Hyndman and Ralph D. Snyder \cite{TBATS_paper}. The TBATS model uses a Fourier series to model each seasonality. Box-Cox transformations are also incorporated and the residuals are modeled using an ARMA model.
 \par
-The result is not convincing however. The residuals are clearly neither gaussian nor white noise (Figure \ref{15min}). Clearly, more work would have to be done to obtain a good result here. For example, one could use the predictions from our previous models for higher time-frames as covariates for a model. After obtaining the prediction for the day, we could limit ourself to just modeling the daily evolution. However we would have to take into account the fact that weekends have a different pattern than weekdays. Also, the confidence bands  of the `forecast`-function could not be trusted at all, since they don’t take into account uncertainty of the exogenous variable.
+The result, shown in Figure \ref{fig8} is not convincing however. The residuals are clearly neither Gaussian nor white noise. More work would have to be done to obtain a good result here. For example, one could use the predictions from our previous models for higher time-frames as covariates for a model. After obtaining the prediction for the day, we could limit ourself to just modeling the daily evolution. However we would have to take into account the fact that weekends have a different pattern than weekdays. Since the variance of the residuals seems constant, a GARCH model is unlikely to improve on the fit.
+
+\begin{figure*}[ht]
+	\centering
+	\includegraphics[width=1\textwidth]{Figs/Fig8.pdf}
+	\caption{Left: ACF of energy consumption at 15min resolution, shown at two different scales. Right: Diagnostic plots for TBATS model. }
+	\label{fig8}
+\end{figure*}
+
 
 \section{Forecasting}
+We perform the forecasting with the R-function `forecast` in the forecast package. The confidence bands therefore don't take into account parameter and model uncertainty. Also, we assumed the temperature regressor to be deterministic, which is obviously not the case in reality. This uncertainty should also be incorporated into the confidence bands, yielding an underestimation of the confidence region size. To create more accurate confidence bands, we suggest using bootstrapping. The forecasts are plotted in Figure \ref{forecasts}, where we show the actual evolution in red.
+\subsection{Weekly}
+We forecast 52 weeks (1 year) after the end of our traning set. The start is therfore January 1st 2018. 
+Not surprisingly, the predictions made with Fourier regressors are very smooth. When we look at the forecasts with the temperature regressor, we see that their performance is inferior to the one with Fourier regressors. Notably, the confidence bands are wider. Also, the model with zero mean is not a very good predictor. 
+The forecast of the SARIMA model is very close to the actual value, also the model with Fourier regressors performs well.
+\subsection{Daily}
+We forecast for 365 days (1 year) after the end of our traning set. The start is therefore January 1st 2018. 
+This time, we removed weekend and holiday datapoints from the actual time series for the forecast and linearly interpolated them.
+We see that the performance is acceptable, but not nearly as good as the one seen on the weekly timeframe.
+The yearly evolution is captured, but lower grain evolution (intraweekly) is not captured well by our model.
+\subsection{15min}
+We forecast using the TBATS model for 1 month. The result is close to the actual value, but the obtained confidence bands are very wide. The daily pattern is captured quite well, but the amplitude seems to be too small for the regular weekdays.
 
+\begin{figure*}[ht]
+	\centering
+	\includegraphics[width=1\textwidth]{Figs/Fig9.pdf}
+	\caption{Forecast plots using the best performing models for weekly, daily and quarter-hourly data.}
+	\label{forecasts}
+\end{figure*}
 
 \section{Conclusion}
 In conclusion, we were able to generate accurate models on the coarse weekly level containing only one - the yearly - seasonality. This model can be used to generate accurate forecasts for the long-term future. 
@@ -151,22 +177,21 @@ However, when refining the temporal step to daily consumption, modeling becomes 
 \par
 The task becomes even more difficult when considering quarter-hourly data. The energy consumption throughout the day follows a particular pattern, which is again very different on work- and work free days. While the model we provide creates reasonable forecasts, the confidence intervals are very large. More work has thus to be done in order to create a better model for intra-day consumption data.
 \par
-
+Further work could be done by incorporating multi-level seasonality in a state space model. Moreover, additional regressors to temperature may be of use in order to make the model more accurate. A more nested approach, where more refined models are fitted only on the residuals of the coarser models could also be of interest. Finally, using bootstrapping for the forecast confidence intervals could be used to give more accurate prediction intervals.
 
 
 \begin{thebibliography}{00}
 
+\bibitem{swissgrid}
+SWISSGRID Energy Grid Data. www.swissgrid.ch/de/home/operation/grid-data.html. Accessed 03.03.2019.
+\bibitem{agroscope}
+Agroscope Temperature Data. www.agrometeo.ch/de/meteorology/datas. Accessed 10.05.2019.
 \bibitem{TBATS_paper}
 De Livera, Alysha M., Rob J. Hyndman, and Ralph D. Snyder. "Forecasting time series with complex seasonal patterns using exponential smoothing." Journal of the American Statistical Association 106.496 (2011): 1513-1527.
-APA	
+
 
 \end{thebibliography}
 
 \end{document}
 
 
-% TODO: 
-% Citations
-% Short explanation of ARIMA, SARIMA, parameters
-% Describe where temperature data comes from.
-% Remove all traces of 15min-data
